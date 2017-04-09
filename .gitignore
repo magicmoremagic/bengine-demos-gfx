@@ -4,3 +4,4 @@ _*
 *.VC.db
 *.VC.opendb
 *.limphash
+.unversioned-commit
