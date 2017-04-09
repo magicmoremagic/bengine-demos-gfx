@@ -1,5 +1,5 @@
 demo 'd-gfx' {
-   app {
+   app '-tex' {
       icon 'icon/bengine.ico',
       src 'src/tex.cpp',
       link_project {
