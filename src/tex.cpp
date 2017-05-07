@@ -1,4 +1,6 @@
+#include "tex_demo.hpp"
 
 int main(int argc, char** argv) {
-   return 0;
+   TexDemo demo(argc, argv);
+   return demo();
 }
