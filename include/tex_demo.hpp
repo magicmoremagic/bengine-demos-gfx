@@ -8,6 +8,7 @@
 #include <be/platform/lifecycle.hpp>
 #include <be/platform/glfw.hpp>
 #include <be/gfx/tex/texture.hpp>
+#include <glbinding/gl33/gl.h>
 #include <functional>
 #include <random>
 
@@ -34,7 +35,7 @@ private:
    GLFWwindow* wnd_ = nullptr;
    be::gfx::tex::ImageFormat format_; // TODO
    be::gfx::tex::Texture tex_;
-   GLuint tex_id_ = 0;
+   gl::GLuint tex_id_ = 0;
    std::function<void()> generator_;
    bool animate_ = false;
    be::rnd::xo128p rnd_;

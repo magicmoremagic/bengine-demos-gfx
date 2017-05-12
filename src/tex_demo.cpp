@@ -11,9 +11,11 @@
 #include <be/cli/cli.hpp>
 #include <glm/gtx/norm.hpp>
 #include <glm/common.hpp>
+#include <glbinding/Binding.h>
 #include <sstream>
 #include <string>
 
+using namespace gl;
 using namespace be;
 using namespace be::gfx;
 using namespace be::gfx::tex;
@@ -259,6 +261,8 @@ int TexDemo::operator()() {
       return status_;
    }
 
+   glbinding::Binding::initialize(false);
+
    try {
       run_();
    } catch (const Fatal& e) {
@@ -359,7 +363,7 @@ void TexDemo::run_() {
    });
 
    glEnable(GL_TEXTURE_2D);
-   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+   glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
    check_errors();
 
    while (!glfwWindowShouldClose(wnd)) {
