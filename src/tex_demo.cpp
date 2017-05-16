@@ -3,11 +3,13 @@
 #include <be/core/version.hpp>
 #include <be/core/stack_trace.hpp>
 #include <be/core/alg.hpp>
+#include <be/util/keyword_parser.hpp>
 #include <be/gfx/version.hpp>
 #include <be/gfx/tex/pixel_access_norm.hpp>
 #include <be/gfx/tex/make_texture.hpp>
 #include <be/gfx/tex/visit_texture.hpp>
 #include <be/gfx/tex/convert_colorspace_static.hpp>
+#include <be/gfx/tex/image_format_gl.hpp>
 #include <be/cli/cli.hpp>
 #include <glm/gtx/norm.hpp>
 #include <glm/common.hpp>
@@ -33,9 +35,7 @@ TexDemo::TexDemo(int argc, char** argv) {
       bool show_help = false;
       S help_query;
 
-      format_ = ImageFormat(U8(4), U8(1), BlockPacking::s_8_8_8_8, 4,
-                            component_types(ComponentType::unorm, 4),
-                            swizzles_rgba(), Colorspace::srgb, true);
+      format_ = canonical_format(gl::GLenum::GL_SRGB_ALPHA);
 
       proc
          (prologue(Table() << header << "be::gfx::tex Demo").query())
@@ -76,11 +76,27 @@ TexDemo::TexDemo(int argc, char** argv) {
                      });
                   };
                } else if (demo == "gradient") {
+                  setup_ = [this]() {
+                     for (int i = 0; i < 8; ++i) {
+                        data_[i] = vec4(fdist_(rnd_), fdist_(rnd_), fdist_(rnd_), 1.f);
+                     }
+                  };
                   generator_ = [this]() {
-                     vec4 a = vec4(fdist_(rnd_), fdist_(rnd_), fdist_(rnd_), 1.f);
-                     vec4 b = vec4(fdist_(rnd_), fdist_(rnd_), fdist_(rnd_), 1.f);
-                     vec4 c = vec4(fdist_(rnd_), fdist_(rnd_), fdist_(rnd_), 1.f);
-                     vec4 d = vec4(fdist_(rnd_), fdist_(rnd_), fdist_(rnd_), 1.f);
+                     if (time_ > 1.f) {
+                        time_ = 0;
+                        for (int i = 0; i < 4; ++i) {
+                           data_[i] = data_[4 + i];
+                        }
+                        for (int i = 4; i < 8; ++i) {
+                           data_[i] = vec4(fdist_(rnd_), fdist_(rnd_), fdist_(rnd_), 1.f);
+                        }
+                     }
+
+                     F32 f = glm::smoothstep(0.f, 1.f, F32(time_));
+                     vec4 a = glm::mix(data_[0], data_[4], f);
+                     vec4 b = glm::mix(data_[1], data_[5], f);
+                     vec4 c = glm::mix(data_[2], data_[6], f);
+                     vec4 d = glm::mix(data_[3], data_[7], f);
                      auto put = put_pixel_norm_func<ivec2>(tex_.view.image());
                      visit_texture_pixels<ivec2>(tex_.view, [=](ImageView& view, ivec2 pc) {
                         vec4 ab = glm::mix(a, b, (pc.x + 0.5f) / view.dim().x);
@@ -158,44 +174,127 @@ TexDemo::TexDemo(int argc, char** argv) {
                iss >> dim_.y;
                return true;
             }))
-         (flag({ "r" },{ "resizable" }, "Make the window resizable.", resizable_))
-         (param({ "s" },{ "scale" }, "Set the scale at which to show the texture.", [this](const S& value) {
+         (flag({ "r" },{ "resizable" }, resizable_).desc("Make the window resizable."))
+         (param({ "s" },{ "scale" }, "SCALE", [this](const S& value) {
                std::istringstream iss(value);
                iss >> scale_;
                return true;
-            }))
+            }).desc("Set the scale at which to show the texture."))
 
-         (param({ "e" }, { "effect-scale" }, "Set the scale for effects (exact meaning depends on demo).", [this](const S& value) {
-               std::istringstream iss(value);
-               iss >> effect_scale_;
-               return true;
-            }))
-         (param({ "t" }, { "time-scale" }, "Sets the time scale.  Higher numbers mean faster.", [this](const S& value) {
-               std::istringstream iss(value);
-               iss >> time_scale_;
-               return true;
-            }))
+         (param({ "f" },{ "format" }, "FORMAT", [this](const S& value) {
+               using namespace gl;
+               util::KeywordParser<gl::GLenum> parser(GL_SRGB_ALPHA);
+               parser
 
-         (flag({ },{ "linear"}, "Use linear scaling instead of nearest-neighbor.", linear_scaling_))
-         (flag({ "a" },{ "animate" }, "Enables animation.", animate_))
+                  /*!! register_template_string([[`with each $ using # { `(GL_`$`, "GL_`$`", "`$`")` nl }]], 'kw')
+                  write_template('kw', {
+                  'R8',                  'R16',                  'R8_SNORM',                  'R16_SNORM',
+                  'R8UI',                  'R16UI',                  'R32UI',                  'R8I',
+                  'R16I',                  'R32I',                  'R16F',                  'R32F',
+                  'RG8',                  'RG16',                  'RG8_SNORM',                  'RG16_SNORM',
+                  'RG8UI',                  'RG16UI',                  'RG32UI',                  'RG8I',
+                  'RG16I',                  'RG32I',                  'RG16F',                  'RG32F',
+                  'SRGB8',                  'RGB8',                  'RGB16',                  'R3_G3_B2',
+                  'RGB565',                  'RGB4',                  'RGB5',                  'RGB8_SNORM',
+                  'RGB16_SNORM',                  'RGB8UI',                  'RGB16UI',                  'RGB32UI',
+                  'RGB8I',                  'RGB16I',                  'RGB32I',                  'R11F_G11F_B10F',
+                  'RGB16F',                  'RGB32F',                  'RGB9_E5',                  'RGBA16',
+                  'RGBA4',                  'RGB5_A1',                  'RGB10_A2',                  'RGBA8_SNORM',
+                  'RGBA16_SNORM',                  'RGBA8UI',                  'RGBA16UI',                  'RGBA32UI',
+                  'RGB10_A2UI',                  'RGBA8I',                  'RGBA16I',                  'RGBA32I',
+                  'RGBA16F',                  'RGBA32F',                  'SRGB8_ALPHA8',                  'RGBA8'
+                  }) !! 64 */
+                  /* ################# !! GENERATED CODE -- DO NOT MODIFY !! ################# */
+                  (GL_R8, "GL_R8", "R8")
+                  (GL_R16, "GL_R16", "R16")
+                  (GL_R8_SNORM, "GL_R8_SNORM", "R8_SNORM")
+                  (GL_R16_SNORM, "GL_R16_SNORM", "R16_SNORM")
+                  (GL_R8UI, "GL_R8UI", "R8UI")
+                  (GL_R16UI, "GL_R16UI", "R16UI")
+                  (GL_R32UI, "GL_R32UI", "R32UI")
+                  (GL_R8I, "GL_R8I", "R8I")
+                  (GL_R16I, "GL_R16I", "R16I")
+                  (GL_R32I, "GL_R32I", "R32I")
+                  (GL_R16F, "GL_R16F", "R16F")
+                  (GL_R32F, "GL_R32F", "R32F")
+                  (GL_RG8, "GL_RG8", "RG8")
+                  (GL_RG16, "GL_RG16", "RG16")
+                  (GL_RG8_SNORM, "GL_RG8_SNORM", "RG8_SNORM")
+                  (GL_RG16_SNORM, "GL_RG16_SNORM", "RG16_SNORM")
+                  (GL_RG8UI, "GL_RG8UI", "RG8UI")
+                  (GL_RG16UI, "GL_RG16UI", "RG16UI")
+                  (GL_RG32UI, "GL_RG32UI", "RG32UI")
+                  (GL_RG8I, "GL_RG8I", "RG8I")
+                  (GL_RG16I, "GL_RG16I", "RG16I")
+                  (GL_RG32I, "GL_RG32I", "RG32I")
+                  (GL_RG16F, "GL_RG16F", "RG16F")
+                  (GL_RG32F, "GL_RG32F", "RG32F")
+                  (GL_SRGB8, "GL_SRGB8", "SRGB8")
+                  (GL_RGB8, "GL_RGB8", "RGB8")
+                  (GL_RGB16, "GL_RGB16", "RGB16")
+                  (GL_R3_G3_B2, "GL_R3_G3_B2", "R3_G3_B2")
+                  (GL_RGB565, "GL_RGB565", "RGB565")
+                  (GL_RGB4, "GL_RGB4", "RGB4")
+                  (GL_RGB5, "GL_RGB5", "RGB5")
+                  (GL_RGB8_SNORM, "GL_RGB8_SNORM", "RGB8_SNORM")
+                  (GL_RGB16_SNORM, "GL_RGB16_SNORM", "RGB16_SNORM")
+                  (GL_RGB8UI, "GL_RGB8UI", "RGB8UI")
+                  (GL_RGB16UI, "GL_RGB16UI", "RGB16UI")
+                  (GL_RGB32UI, "GL_RGB32UI", "RGB32UI")
+                  (GL_RGB8I, "GL_RGB8I", "RGB8I")
+                  (GL_RGB16I, "GL_RGB16I", "RGB16I")
+                  (GL_RGB32I, "GL_RGB32I", "RGB32I")
+                  (GL_R11F_G11F_B10F, "GL_R11F_G11F_B10F", "R11F_G11F_B10F")
+                  (GL_RGB16F, "GL_RGB16F", "RGB16F")
+                  (GL_RGB32F, "GL_RGB32F", "RGB32F")
+                  (GL_RGB9_E5, "GL_RGB9_E5", "RGB9_E5")
+                  (GL_RGBA16, "GL_RGBA16", "RGBA16")
+                  (GL_RGBA4, "GL_RGBA4", "RGBA4")
+                  (GL_RGB5_A1, "GL_RGB5_A1", "RGB5_A1")
+                  (GL_RGB10_A2, "GL_RGB10_A2", "RGB10_A2")
+                  (GL_RGBA8_SNORM, "GL_RGBA8_SNORM", "RGBA8_SNORM")
+                  (GL_RGBA16_SNORM, "GL_RGBA16_SNORM", "RGBA16_SNORM")
+                  (GL_RGBA8UI, "GL_RGBA8UI", "RGBA8UI")
+                  (GL_RGBA16UI, "GL_RGBA16UI", "RGBA16UI")
+                  (GL_RGBA32UI, "GL_RGBA32UI", "RGBA32UI")
+                  (GL_RGB10_A2UI, "GL_RGB10_A2UI", "RGB10_A2UI")
+                  (GL_RGBA8I, "GL_RGBA8I", "RGBA8I")
+                  (GL_RGBA16I, "GL_RGBA16I", "RGBA16I")
+                  (GL_RGBA32I, "GL_RGBA32I", "RGBA32I")
+                  (GL_RGBA16F, "GL_RGBA16F", "RGBA16F")
+                  (GL_RGBA32F, "GL_RGBA32F", "RGBA32F")
+                  (GL_SRGB8_ALPHA8, "GL_SRGB8_ALPHA8", "SRGB8_ALPHA8")
+                  (GL_RGBA8, "GL_RGBA8", "RGBA8")
+                  
+                  /* ######################### END OF GENERATED CODE ######################### */
+                  ;
+
+               format_ = canonical_format(util::throw_on_error(parser.parse(value)));
+            }).desc("Set OpenGL internal format."))
+
+         (numeric_param({ "e" }, { "effect-scale" }, "X", effect_scale_).desc("Set the scale for effects (exact meaning depends on demo)."))
+
+         (numeric_param({ "t" }, { "time-scale" }, "X", time_scale_).desc("Sets the time scale.  Higher numbers mean faster."))
+
+         (flag({ }, { "linear" }, linear_scaling_).desc("Use linear scaling instead of nearest-neighbor."))
+         (flag({ "a" }, { "animate" }, animate_).desc("Enables animation."))
 
          (end_of_options())
 
          (verbosity_param({ "v" }, { "verbosity" }, "LEVEL", default_log().verbosity_mask()))
-         (flag({ "V" }, { "version" }, "Prints version information to standard output.", show_version))
 
-         (param({ "?" }, { "help" }, "OPTION",
-            [&](const S& value) {
+         (flag({ "V" }, { "version" }, show_version).desc("Prints version information to standard output."))
+
+         (param({ "?" }, { "help" }, "OPTION", [&](const S& value) {
                show_help = true;
                help_query = value;
             }).default_value(S())
-              .allow_options_as_values(true)
-              .desc(Cell() << "Outputs this help message.  For more verbose help, use " << fg_yellow << "--help")
-              .extra(Cell() << nl << "If " << fg_cyan << "OPTION" << reset
-                            << " is provided, the options list will be filtered to show only options that contain that string."))
+               .allow_options_as_values(true)
+               .desc(Cell() << "Outputs this help message.  For more verbose help, use " << fg_yellow << "--help")
+               .extra(Cell() << nl << "If " << fg_cyan << "OPTION" << reset
+                      << " is provided, the options list will be filtered to show only options that contain that string."))
 
-         (flag({ }, { "help" },
-            [&]() {
+         (flag({ }, { "help" }, [&]() {
                proc.verbose(true);
             }).ignore_values(true))
 
@@ -331,6 +430,11 @@ void TexDemo::run_() {
    glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
    check_errors();
 
+   if (setup_) {
+      setup_();
+      check_errors();
+   }
+
    if (generator_) {
       generator_();
       check_errors();
@@ -350,7 +454,7 @@ void TexDemo::run_() {
       }
       glViewport(0, 0, new_wnd_size.x, new_wnd_size.y);
 
-      if (new_size != demo.dim_) {
+      if (new_size != demo.dim_ && new_size.x * new_size.y > 0) {
          demo.dim_ = new_size;
          demo.tex_ = make_planar_texture(demo.format_, demo.dim_, 1);
          if (demo.generator_) {
@@ -377,7 +481,9 @@ void TexDemo::run_() {
       check_errors();
 
       if (animate_ && generator_) {
-         time_ = tu_to_seconds(ts_now()) / time_scale_;
+         last_ = now_;
+         now_ = ts_now();
+         time_ += tu_to_seconds(now_ - last_) / time_scale_;
          sin_time_ = (F32)sin(time_ * 2.0 * glm::pi<F64>());
          generator_();
          check_errors();
@@ -402,6 +508,7 @@ void TexDemo::run_() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void TexDemo::upload_() {
-   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, tex_.view.dim(0).x, tex_.view.dim(0).y, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_.view.image().data());
+   auto f = gl_format(format_);
+   glTexImage2D(GL_TEXTURE_2D, 0, f.internal_format, tex_.view.dim(0).x, tex_.view.dim(0).y, 0, f.data_format, f.data_type, tex_.view.image().data());
    check_errors();
 }

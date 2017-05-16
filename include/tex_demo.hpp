@@ -4,11 +4,12 @@
 
 #include <be/core/lifecycle.hpp>
 #include <be/core/glm.hpp>
+#include <be/core/time.hpp>
 #include <be/util/xoroshiro_128_plus.hpp>
 #include <be/platform/lifecycle.hpp>
 #include <be/platform/glfw.hpp>
 #include <be/gfx/tex/texture.hpp>
-#include <glbinding/gl33/gl.h>
+#include <be/gfx/glbinding.hpp>
 #include <functional>
 #include <random>
 
@@ -36,15 +37,19 @@ private:
    be::gfx::tex::ImageFormat format_; // TODO
    be::gfx::tex::Texture tex_;
    gl::GLuint tex_id_ = 0;
+   std::function<void()> setup_;
    std::function<void()> generator_;
    bool animate_ = false;
    be::rnd::xo128p rnd_;
    std::uniform_int_distribution<> idist_ = std::uniform_int_distribution<>(0, 255);
    std::uniform_real_distribution<be::F32> fdist_ = std::uniform_real_distribution<be::F32>(0.f, 1.f);
+   be::TU last_ = be::TU::zero();
+   be::TU now_ = be::TU::zero();
    be::F64 time_ = 0.0;
    be::F32 time_scale_ = 10.f;
    be::F32 sin_time_ = 0.f;
    be::F32 effect_scale_ = 1.f;
+   be::vec4 data_[8];
 };
 
 #endif
