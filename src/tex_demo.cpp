@@ -14,6 +14,7 @@
 #include <glm/gtx/norm.hpp>
 #include <glm/common.hpp>
 #include <glbinding/Binding.h>
+#include <be/gfx/glbinding.hpp>
 #include <sstream>
 #include <string>
 
@@ -360,7 +361,7 @@ int TexDemo::operator()() {
       return status_;
    }
 
-   glbinding::Binding::initialize(false);
+   glbinding::Binding::initialize();
 
    try {
       run_();
@@ -383,26 +384,15 @@ int TexDemo::operator()() {
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////
-const char* gl_error_name(GLenum error) {
-   switch (error) {
-      case GL_INVALID_ENUM:                  return "GL_INVALID_ENUM";
-      case GL_INVALID_VALUE:                 return "GL_INVALID_VALUE";
-      case GL_INVALID_OPERATION:             return "GL_INVALID_OPERATION";
-      case GL_OUT_OF_MEMORY:                 return "GL_OUT_OF_MEMORY";
-      case GL_STACK_UNDERFLOW:               return "GL_STACK_UNDERFLOW";
-      case GL_STACK_OVERFLOW:                return "GL_STACK_OVERFLOW";
-      default:                               return "Unknown";
-   }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-void check_errors() {
-   GLenum error_status;
-   while ((error_status = glGetError()) != GL_NO_ERROR) {
-      be_warn() << "OpenGL Error: " << gl_error_name(error_status)
-         & attr("Trace") << get_stack_trace()
-         | default_log();
-   }
+void check_errors(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+   be_warn() << "OpenGL Error"
+      & attr("Source") << source
+      & attr("Type") << type
+      & attr("ID") << id
+      & attr("Severity") << severity
+      & attr("Message") << message
+      & attr("Trace") << get_stack_trace()
+      | default_log();
 }
 
 } // ::()
@@ -415,11 +405,14 @@ void TexDemo::run_() {
    glfwSwapInterval(1);
    glfwSetWindowUserPointer(wnd, this);
 
+   glEnable(GL_DEBUG_OUTPUT);
+   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+   glDebugMessageCallback(check_errors, nullptr);
+
    tex_ = make_planar_texture(format_, dim_, 1);
    rnd_.seed(perf_now());
    
    glClearColor(0.0, 0.0, 0.0, 0.0);
-   check_errors();
 
    glGenTextures(1, &tex_id_);
    glBindTexture(GL_TEXTURE_2D, tex_id_);
@@ -428,16 +421,13 @@ void TexDemo::run_() {
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear_scaling_ ? GL_LINEAR : GL_NEAREST);
    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear_scaling_ ? GL_LINEAR : GL_NEAREST);
    glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
-   check_errors();
 
    if (setup_) {
       setup_();
-      check_errors();
    }
 
    if (generator_) {
       generator_();
-      check_errors();
    }
 
    upload_();
@@ -459,7 +449,6 @@ void TexDemo::run_() {
          demo.tex_ = make_planar_texture(demo.format_, demo.dim_, 1);
          if (demo.generator_) {
             demo.generator_();
-            check_errors();
          }
          demo.upload_();
          glfwPostEmptyEvent();
@@ -468,7 +457,6 @@ void TexDemo::run_() {
 
    glEnable(GL_TEXTURE_2D);
    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-   check_errors();
 
    while (!glfwWindowShouldClose(wnd)) {
       if (animate_) {
@@ -478,7 +466,6 @@ void TexDemo::run_() {
       }
       
       glClear(GL_COLOR_BUFFER_BIT);
-      check_errors();
 
       if (animate_ && generator_) {
          last_ = now_;
@@ -486,7 +473,6 @@ void TexDemo::run_() {
          time_ += tu_to_seconds(now_ - last_) / time_scale_;
          sin_time_ = (F32)sin(time_ * 2.0 * glm::pi<F64>());
          generator_();
-         check_errors();
          upload_();
       }
 
@@ -497,7 +483,6 @@ void TexDemo::run_() {
       glTexCoord2fv(glm::value_ptr(glm::vec2(1.0f, 1.f))); glVertex2f(1.f, -1.f);
       glTexCoord2fv(glm::value_ptr(glm::vec2(0.0f, 1.f))); glVertex2f(-1.f, -1.f);
       glEnd();
-      check_errors();
 
       glfwSwapBuffers(wnd);
    }
@@ -510,5 +495,4 @@ void TexDemo::run_() {
 void TexDemo::upload_() {
    auto f = gl_format(format_);
    glTexImage2D(GL_TEXTURE_2D, 0, f.internal_format, tex_.view.dim(0).x, tex_.view.dim(0).y, 0, f.data_format, f.data_type, tex_.view.image().data());
-   check_errors();
 }

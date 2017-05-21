@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>d-gfx</ProjectName>
     <RootNamespace>d-gfx-tex</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
     <ProjectGuid>{F0BBF8B4-BFFA-4A1E-BBC9-F830CEC58C03}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
