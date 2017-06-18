@@ -5,6 +5,7 @@
 #include <be/core/lifecycle.hpp>
 #include <be/core/glm.hpp>
 #include <be/core/time.hpp>
+#include <be/core/filesystem.hpp>
 #include <be/util/xoroshiro_128_plus.hpp>
 #include <be/platform/lifecycle.hpp>
 #include <be/platform/glfw.hpp>
@@ -40,7 +41,7 @@ private:
    std::function<void()> setup_;
    std::function<void()> generator_;
    bool animate_ = false;
-   be::rnd::xo128p rnd_;
+   be::util::xo128p rnd_;
    std::uniform_int_distribution<> idist_ = std::uniform_int_distribution<>(0, 255);
    std::uniform_real_distribution<be::F32> fdist_ = std::uniform_real_distribution<be::F32>(0.f, 1.f);
    be::TU last_ = be::TU::zero();
@@ -50,6 +51,7 @@ private:
    be::F32 sin_time_ = 0.f;
    be::F32 effect_scale_ = 1.f;
    be::vec4 data_[8];
+   be::Path file_;
 };
 
 #endif

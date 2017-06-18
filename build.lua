@@ -7,7 +7,8 @@ demo 'd-gfx' {
           'gfx-tex',
           'gfx',
           'platform',
-          'core-id'
+          'core-id',
+          'util-fs'
       }
    }
 }

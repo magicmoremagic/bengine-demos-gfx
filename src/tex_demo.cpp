@@ -4,12 +4,16 @@
 #include <be/core/stack_trace.hpp>
 #include <be/core/alg.hpp>
 #include <be/util/keyword_parser.hpp>
+#include <be/util/util_prng_autolink.hpp>
+#include <be/util/util_compression_autolink.hpp>
 #include <be/gfx/version.hpp>
 #include <be/gfx/tex/pixel_access_norm.hpp>
 #include <be/gfx/tex/make_texture.hpp>
 #include <be/gfx/tex/visit_texture.hpp>
 #include <be/gfx/tex/convert_colorspace_static.hpp>
 #include <be/gfx/tex/image_format_gl.hpp>
+#include <be/gfx/tex/read.hpp>
+#include <be/gfx/tex/blit_pixels.hpp>
 #include <be/cli/cli.hpp>
 #include <glm/gtx/norm.hpp>
 #include <glm/common.hpp>
@@ -51,6 +55,7 @@ TexDemo::TexDemo(int argc, char** argv) {
                           << row << "cosdst2" << cell << "Draws a texture where each pixel's value is the cosine of the square of its distance form the center of the texture.  Use " << fg_yellow << "--effect-scale" << reset << " to change the 'zoom' factor."
                           << row << "pinwheel" << cell << "Draws a texture where each pixel's hue is determined by its angle around the center.  Use " << fg_yellow << "--effect-scale" << reset << " to change the frequency of color change."
                           << row << "pinwheel-r" << cell << "Like pinwheel, but discards the blue/green channels and uses red instead."
+                          << row << "view" << cell << "Attempt to load the image file specified by " << fg_yellow<< "--file" << reset << " and display it."
          ))
 
          (any(
@@ -158,6 +163,14 @@ TexDemo::TexDemo(int argc, char** argv) {
                         pixel_norm = vec4(pixel_norm.r);
                         put(view, pc, pixel_norm);
                      });
+                  };
+               } else if (demo == "view") {
+                  generator_ = [this]() {
+                     Texture tex = be::gfx::tex::throw_on_error(be::gfx::tex::read_texture(file_));
+                     dim_ = tex.view.dim(0);
+                     tex_ = make_planar_texture(format_, dim_, 1);
+                     auto dest = tex_.view.image(0,0,0);
+                     be::gfx::tex::blit_pixels(tex.view.image(0, 0, 0), dest);
                   };
                } else {
                   return false;
@@ -272,6 +285,10 @@ TexDemo::TexDemo(int argc, char** argv) {
 
                format_ = canonical_format(util::throw_on_error(parser.parse(value)));
             }).desc("Set OpenGL internal format."))
+
+          (param({ }, { "file" }, "PATH", [&](const S& value) {
+               file_ = value;
+            }).desc("Specifies the path to an image file for demos that require an input image."))
 
          (numeric_param({ "e" }, { "effect-scale" }, "X", effect_scale_).desc("Set the scale for effects (exact meaning depends on demo)."))
 
