@@ -6,13 +6,14 @@
 #include <be/util/keyword_parser.hpp>
 #include <be/util/util_prng_autolink.hpp>
 #include <be/util/util_compression_autolink.hpp>
+#include <be/util/get_file_contents.hpp>
 #include <be/gfx/version.hpp>
 #include <be/gfx/tex/pixel_access_norm.hpp>
 #include <be/gfx/tex/make_texture.hpp>
 #include <be/gfx/tex/visit_texture.hpp>
 #include <be/gfx/tex/convert_colorspace_static.hpp>
 #include <be/gfx/tex/image_format_gl.hpp>
-#include <be/gfx/tex/read.hpp>
+#include <be/gfx/tex/texture_reader.hpp>
 #include <be/gfx/tex/blit_pixels.hpp>
 #include <be/cli/cli.hpp>
 #include <glm/gtx/norm.hpp>
@@ -166,7 +167,9 @@ TexDemo::TexDemo(int argc, char** argv) {
                   };
                } else if (demo == "view") {
                   generator_ = [this]() {
-                     Texture tex = be::gfx::tex::throw_on_error(be::gfx::tex::read_texture(file_));
+                     TextureReader reader;
+                     reader.read(file_);
+                     Texture tex = reader.texture();
                      dim_ = tex.view.dim(0);
                      tex_ = make_planar_texture(format_, dim_, 1);
                      auto dest = tex_.view.image(0,0,0);
@@ -283,7 +286,11 @@ TexDemo::TexDemo(int argc, char** argv) {
                   /* ######################### END OF GENERATED CODE ######################### */
                   ;
 
-               format_ = canonical_format(util::throw_on_error(parser.parse(value)));
+               std::error_code ec;
+               format_ = canonical_format(parser.parse(value, ec));
+               if (ec) {
+                  throw RecoverableError(ec);
+               }
             }).desc("Set OpenGL internal format."))
 
           (param({ }, { "file" }, "PATH", [&](const S& value) {
@@ -310,7 +317,7 @@ TexDemo::TexDemo(int argc, char** argv) {
                .allow_options_as_values(true)
                .desc(Cell() << "Outputs this help message.  For more verbose help, use " << fg_yellow << "--help")
                .extra(Cell() << nl << "If " << fg_cyan << "OPTION" << reset
-                      << " is provided, the options list will be filtered to show only options that contain that string."))
+                             << " is provided, the options list will be filtered to show only options that contain that string."))
 
          (flag({ }, { "help" }, [&]() {
                proc.verbose(true);
@@ -345,20 +352,20 @@ TexDemo::TexDemo(int argc, char** argv) {
          proc.describe(std::cout, ids::cli_describe_section_license);
       }
 
-   } catch (const cli::OptionException& e) {
+   } catch (const cli::OptionError& e) {
       status_ = 2;
       be_error() << S(e.what())
          & attr(ids::log_attr_index) << e.raw_position()
          & attr(ids::log_attr_argument) << S(e.argument())
          & attr(ids::log_attr_option) << S(e.option())
          | default_log();
-   } catch (const cli::ArgumentException& e) {
+   } catch (const cli::ArgumentError& e) {
       status_ = 2;
       be_error() << S(e.what())
          & attr(ids::log_attr_index) << e.raw_position()
          & attr(ids::log_attr_argument) << S(e.argument())
          | default_log();
-   } catch (const Fatal& e) {
+   } catch (const FatalTrace& e) {
       status_ = 2;
       be_error() << "Fatal error while parsing command line!"
          & attr(ids::log_attr_message) << S(e.what())
@@ -382,11 +389,29 @@ int TexDemo::operator()() {
 
    try {
       run_();
-   } catch (const Fatal& e) {
+   } catch (const FatalTrace& e) {
       status_ = std::max(status_, (I8)1);
       be_error() << "Unexpected fatal error!"
          & attr(ids::log_attr_message) << S(e.what())
          & attr(ids::log_attr_trace) << StackTrace(e.trace())
+         | default_log();
+   } catch (const fs::filesystem_error& e) {
+      status_ = std::max(status_, (I8)1);
+      be_error() << "Unexpected error!"
+         & attr(ids::log_attr_message) << S(e.what())
+         & attr(ids::log_attr_category) << e.code().category().name()
+         & attr(ids::log_attr_error_code) << e.code().value()
+         & attr(ids::log_attr_error) << e.code().message()
+         & attr(ids::log_attr_path) << e.path1().generic_string()
+         & attr(ids::log_attr_path) << e.path2().generic_string()
+         | default_log();
+   } catch (const std::system_error& e) {
+      status_ = std::max(status_, (I8)1);
+      be_error() << "Unexpected error!"
+         & attr(ids::log_attr_message) << S(e.what())
+         & attr(ids::log_attr_category) << e.code().category().name()
+         & attr(ids::log_attr_error_code) << e.code().value()
+         & attr(ids::log_attr_error) << e.code().message()
          | default_log();
    } catch (const std::exception& e) {
       status_ = std::max(status_, (I8)1);
