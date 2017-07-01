@@ -175,6 +175,21 @@ TexDemo::TexDemo(int argc, char** argv) {
                      auto dest = tex_.view.image(0,0,0);
                      be::gfx::tex::blit_pixels(tex.view.image(0, 0, 0), dest);
                   };
+               } else if (demo == "view-na") {
+                  generator_ = [this]() {
+                     TextureReader reader;
+                     reader.read(file_);
+                     Texture tex = reader.texture();
+                     be::gfx::tex::visit_texture_pixels<ivec2>(tex.view, [](be::gfx::tex::ImageView& v, ivec2 pc) {
+                        RGBA p = be::gfx::tex::get_block<RGBA>(v, pc);
+                        p.a = 255;
+                        be::gfx::tex::put_block(v, pc, p);
+                     });
+                     dim_ = tex.view.dim(0);
+                     tex_ = make_planar_texture(format_, dim_, 1);
+                     auto dest = tex_.view.image(0,0,0);
+                     be::gfx::tex::blit_pixels(tex.view.image(0, 0, 0), dest);
+                  };
                } else {
                   return false;
                }
