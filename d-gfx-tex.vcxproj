@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectName>d-gfx</ProjectName>
-    <RootNamespace>d-gfx-tex</RootNamespace>
+    <ProjectName>d-gfx-tex</ProjectName>
+    <RootNamespace>d-gfx</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
     <ProjectGuid>{F0BBF8B4-BFFA-4A1E-BBC9-F830CEC58C03}</ProjectGuid>
   </PropertyGroup>
