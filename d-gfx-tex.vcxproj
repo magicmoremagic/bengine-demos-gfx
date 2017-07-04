@@ -43,11 +43,11 @@
   <PropertyGroup />
   <ItemDefinitionGroup />
   <ItemGroup>
-    <ClCompile Include="src\tex_demo.cpp" />
-    <ClCompile Include="src\tex.cpp" />
+    <ClCompile Include="src-tex\tex_demo.cpp" />
+    <ClCompile Include="src-tex\tex.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\tex_demo.hpp" />
+    <ClInclude Include="src-tex\tex_demo.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

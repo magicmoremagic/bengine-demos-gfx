@@ -1,7 +1,8 @@
 demo 'd-gfx' {
    app '-tex' {
       icon 'icon/bengine.ico',
-      src 'src/tex*.cpp',
+      limp_src 'src-tex/*.hpp',
+      src 'src-tex/tex*.cpp',
       define 'GLM_ENABLE_EXPERIMENTAL',
       link_project {
           'gfx-tex',
