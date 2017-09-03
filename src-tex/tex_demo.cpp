@@ -298,7 +298,7 @@ TexDemo::TexDemo(int argc, char** argv) {
                   (GL_RGBA32F, "GL_RGBA32F", "RGBA32F")
                   (GL_SRGB8_ALPHA8, "GL_SRGB8_ALPHA8", "SRGB8_ALPHA8")
                   (GL_RGBA8, "GL_RGBA8", "RGBA8")
-                  
+
                   /* ######################### END OF GENERATED CODE ######################### */
                   ;
 

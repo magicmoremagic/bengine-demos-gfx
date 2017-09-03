@@ -29,7 +29,7 @@ private:
    be::PlatformLifecycle platform_;
 
    be::I8 status_ = 0;
-   
+
    bool resizable_ = false;
    be::ivec2 dim_ = be::ivec2(160, 120);
    be::F32 scale_ = 4.f;
