@@ -39,6 +39,7 @@ TexDemo::TexDemo(int argc, char** argv) {
 
       bool show_version = false;
       bool show_help = false;
+      bool verbose = false;
       S help_query;
 
       format_ = canonical_format(gl::GLenum::GL_SRGB_ALPHA);
@@ -334,16 +335,14 @@ TexDemo::TexDemo(int argc, char** argv) {
                .extra(Cell() << nl << "If " << fg_cyan << "OPTION" << reset
                              << " is provided, the options list will be filtered to show only options that contain that string."))
 
-         (flag({ }, { "help" }, [&]() {
-               proc.verbose(true);
-            }).ignore_values(true))
+         (flag({ }, { "help" }, verbose).ignore_values(true))
 
          (exit_code(0, "There were no errors."))
          (exit_code(1, "An unknown error occurred."))
          (exit_code(2, "There was a problem parsing the command line arguments."))
          ;
 
-      proc(argc, argv);
+      proc.process(argc, argv);
 
       if (!show_help && !show_version && !generator_) {
          show_help = true;
@@ -361,10 +360,10 @@ TexDemo::TexDemo(int argc, char** argv) {
       }
 
       if (show_help) {
-         proc.describe(std::cout, help_query);
+         proc.describe(std::cout, verbose, help_query);
       } else if (show_version) {
-         proc.describe(std::cout, ids::cli_describe_section_prologue);
-         proc.describe(std::cout, ids::cli_describe_section_license);
+         proc.describe(std::cout, verbose, ids::cli_describe_section_prologue);
+         proc.describe(std::cout, verbose, ids::cli_describe_section_license);
       }
 
    } catch (const cli::OptionError& e) {
@@ -468,7 +467,7 @@ void TexDemo::run_() {
 
    tex_ = make_planar_texture(format_, dim_, 1);
    rnd_.seed(perf_now());
-   
+
    glClearColor(0.0, 0.0, 0.0, 0.0);
 
    glGenTextures(1, &tex_id_);
@@ -521,7 +520,7 @@ void TexDemo::run_() {
       } else {
          glfwWaitEvents();
       }
-      
+
       glClear(GL_COLOR_BUFFER_BIT);
 
       if (animate_ && generator_) {
@@ -551,5 +550,12 @@ void TexDemo::run_() {
 ///////////////////////////////////////////////////////////////////////////////
 void TexDemo::upload_() {
    auto f = gl_format(format_);
+
+   be_verbose() << "Uploading image"
+      & attr("Internal Format") << f.internal_format
+      & attr("Data Format") << f.data_format
+      & attr("Data Type") << f.data_type
+      | default_log();
+
    glTexImage2D(GL_TEXTURE_2D, 0, f.internal_format, tex_.view.dim(0).x, tex_.view.dim(0).y, 0, f.data_format, f.data_type, tex_.view.image().data());
 }
