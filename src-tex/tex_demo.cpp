@@ -221,21 +221,21 @@ TexDemo::TexDemo(int argc, char** argv) {
 
                   /*!! register_template_string([[`with each $ using # { `(GL_`$`, "GL_`$`", "`$`")` nl }]], 'kw')
                   write_template('kw', {
-                  'R8',                  'R16',                  'R8_SNORM',                  'R16_SNORM',
-                  'R8UI',                  'R16UI',                  'R32UI',                  'R8I',
-                  'R16I',                  'R32I',                  'R16F',                  'R32F',
-                  'RG8',                  'RG16',                  'RG8_SNORM',                  'RG16_SNORM',
-                  'RG8UI',                  'RG16UI',                  'RG32UI',                  'RG8I',
-                  'RG16I',                  'RG32I',                  'RG16F',                  'RG32F',
-                  'SRGB8',                  'RGB8',                  'RGB16',                  'R3_G3_B2',
-                  'RGB565',                  'RGB4',                  'RGB5',                  'RGB8_SNORM',
-                  'RGB16_SNORM',                  'RGB8UI',                  'RGB16UI',                  'RGB32UI',
-                  'RGB8I',                  'RGB16I',                  'RGB32I',                  'R11F_G11F_B10F',
-                  'RGB16F',                  'RGB32F',                  'RGB9_E5',                  'RGBA16',
-                  'RGBA4',                  'RGB5_A1',                  'RGB10_A2',                  'RGBA8_SNORM',
-                  'RGBA16_SNORM',                  'RGBA8UI',                  'RGBA16UI',                  'RGBA32UI',
-                  'RGB10_A2UI',                  'RGBA8I',                  'RGBA16I',                  'RGBA32I',
-                  'RGBA16F',                  'RGBA32F',                  'SRGB8_ALPHA8',                  'RGBA8'
+                  'R8',            'R16',      'R8_SNORM',      'R16_SNORM',
+                  'R8UI',          'R16UI',    'R32UI',         'R8I',
+                  'R16I',          'R32I',     'R16F',          'R32F',
+                  'RG8',           'RG16',     'RG8_SNORM',     'RG16_SNORM',
+                  'RG8UI',         'RG16UI',   'RG32UI',        'RG8I',
+                  'RG16I',         'RG32I',    'RG16F',         'RG32F',
+                  'SRGB8',         'RGB8',     'RGB16',         'R3_G3_B2',
+                  'RGB565',        'RGB4',     'RGB5',          'RGB8_SNORM',
+                  'RGB16_SNORM',   'RGB8UI',   'RGB16UI',       'RGB32UI',
+                  'RGB8I',         'RGB16I',   'RGB32I',        'R11F_G11F_B10F',
+                  'RGB16F',        'RGB32F',   'RGB9_E5',       'RGBA16',
+                  'RGBA4',         'RGB5_A1',  'RGB10_A2',      'RGBA8_SNORM',
+                  'RGBA16_SNORM',  'RGBA8UI',  'RGBA16UI',      'RGBA32UI',
+                  'RGB10_A2UI',    'RGBA8I',   'RGBA16I',       'RGBA32I',
+                  'RGBA16F',       'RGBA32F',  'SRGB8_ALPHA8',  'RGBA8'
                   }) !! 64 */
                   /* ################# !! GENERATED CODE -- DO NOT MODIFY !! ################# */
                   (GL_R8, "GL_R8", "R8")
