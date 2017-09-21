@@ -16,16 +16,15 @@
 #include <be/gfx/tex/texture_reader.hpp>
 #include <be/gfx/tex/blit_pixels.hpp>
 #include <be/cli/cli.hpp>
+#include <be/gfx/bgl.hpp>
 #include <glm/gtx/norm.hpp>
 #include <glm/common.hpp>
-#include <glbinding/Binding.h>
-#include <be/gfx/glbinding.hpp>
 #include <sstream>
 #include <string>
 
-using namespace gl;
 using namespace be;
 using namespace be::gfx;
+using namespace be::gfx::gl;
 using namespace be::gfx::tex;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,7 +41,7 @@ TexDemo::TexDemo(int argc, char** argv) {
       bool verbose = false;
       S help_query;
 
-      format_ = canonical_format(gl::GLenum::GL_SRGB_ALPHA);
+      format_ = canonical_format(GL_SRGB_ALPHA);
 
       proc
          (prologue(Table() << header << "be::gfx::tex Demo").query())
@@ -228,7 +227,7 @@ TexDemo::TexDemo(int argc, char** argv) {
                   'RG8UI',         'RG16UI',   'RG32UI',        'RG8I',
                   'RG16I',         'RG32I',    'RG16F',         'RG32F',
                   'SRGB8',         'RGB8',     'RGB16',         'R3_G3_B2',
-                  'RGB565',        'RGB4',     'RGB5',          'RGB8_SNORM',
+                  --[['RGB565',]]  'RGB4',     'RGB5',          'RGB8_SNORM',
                   'RGB16_SNORM',   'RGB8UI',   'RGB16UI',       'RGB32UI',
                   'RGB8I',         'RGB16I',   'RGB32I',        'R11F_G11F_B10F',
                   'RGB16F',        'RGB32F',   'RGB9_E5',       'RGBA16',
@@ -236,7 +235,7 @@ TexDemo::TexDemo(int argc, char** argv) {
                   'RGBA16_SNORM',  'RGBA8UI',  'RGBA16UI',      'RGBA32UI',
                   'RGB10_A2UI',    'RGBA8I',   'RGBA16I',       'RGBA32I',
                   'RGBA16F',       'RGBA32F',  'SRGB8_ALPHA8',  'RGBA8'
-                  }) !! 64 */
+                  }) !! 63 */
                   /* ################# !! GENERATED CODE -- DO NOT MODIFY !! ################# */
                   (GL_R8, "GL_R8", "R8")
                   (GL_R16, "GL_R16", "R16")
@@ -266,7 +265,6 @@ TexDemo::TexDemo(int argc, char** argv) {
                   (GL_RGB8, "GL_RGB8", "RGB8")
                   (GL_RGB16, "GL_RGB16", "RGB16")
                   (GL_R3_G3_B2, "GL_R3_G3_B2", "R3_G3_B2")
-                  (GL_RGB565, "GL_RGB565", "RGB565")
                   (GL_RGB4, "GL_RGB4", "RGB4")
                   (GL_RGB5, "GL_RGB5", "RGB5")
                   (GL_RGB8_SNORM, "GL_RGB8_SNORM", "RGB8_SNORM")
@@ -399,8 +397,6 @@ int TexDemo::operator()() {
       return status_;
    }
 
-   glbinding::Binding::initialize();
-
    try {
       run_();
    } catch (const FatalTrace& e) {
@@ -461,9 +457,15 @@ void TexDemo::run_() {
    glfwSwapInterval(1);
    glfwSetWindowUserPointer(wnd, this);
 
-   glEnable(GL_DEBUG_OUTPUT);
-   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-   glDebugMessageCallback(check_errors, nullptr);
+   gl::init_context();
+
+   if (GL_KHR_debug) {
+      //#bgl checked(GL_KHR_debug)
+      glEnable(GL_DEBUG_OUTPUT);
+      glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+      glDebugMessageCallback(check_errors, nullptr);
+      //#bgl unchecked
+   }
 
    tex_ = make_planar_texture(format_, dim_, 1);
    rnd_.seed(perf_now());

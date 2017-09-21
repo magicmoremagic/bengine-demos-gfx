@@ -10,7 +10,7 @@
 #include <be/platform/lifecycle.hpp>
 #include <be/platform/glfw.hpp>
 #include <be/gfx/tex/texture.hpp>
-#include <be/gfx/glbinding.hpp>
+#include <be/gfx/bgl.hpp>
 #include <functional>
 #include <random>
 
@@ -37,7 +37,7 @@ private:
    GLFWwindow* wnd_ = nullptr;
    be::gfx::tex::ImageFormat format_; // TODO
    be::gfx::tex::Texture tex_;
-   gl::GLuint tex_id_ = 0;
+   be::gfx::gl::GLuint tex_id_ = 0;
    std::function<void()> setup_;
    std::function<void()> generator_;
    bool animate_ = false;
