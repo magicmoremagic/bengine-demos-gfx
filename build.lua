@@ -9,7 +9,9 @@ demo 'd-gfx' {
           'gfx',
           'platform',
           'core-id',
-          'util-fs'
+          'util-fs',
+          'cli',
+          'util-string'
       }
    }
 }

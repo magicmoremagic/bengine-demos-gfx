@@ -4,8 +4,6 @@
 #include <be/core/stack_trace.hpp>
 #include <be/core/alg.hpp>
 #include <be/util/keyword_parser.hpp>
-#include <be/util/util_prng_autolink.hpp>
-#include <be/util/util_compression_autolink.hpp>
 #include <be/util/get_file_contents.hpp>
 #include <be/gfx/version.hpp>
 #include <be/gfx/tex/pixel_access_norm.hpp>
