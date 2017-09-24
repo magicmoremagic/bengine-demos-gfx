@@ -434,7 +434,7 @@ int TexDemo::operator()() {
 namespace {
 
 ///////////////////////////////////////////////////////////////////////////////
-void check_errors(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+void GLAPIENTRY check_errors(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
    be_warn() << "OpenGL Error"
       & attr("Source") << source
       & attr("Type") << type
