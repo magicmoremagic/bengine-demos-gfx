@@ -43,12 +43,12 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <Link>
-      <AdditionalDependencies>gfx-tex-debug.lib;core-debug.lib;zlib-static-debug.lib;gfx-debug.lib;util-debug.lib;platform-debug.lib;glfw-debug.lib;core-id-debug.lib;util-fs-debug.lib;util-compression-debug.lib;util-prng-debug.lib;cli-debug.lib;ctable-debug.lib;util-string-debug.lib;Dbghelp.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gfx-tex-debug.lib;core-debug.lib;zlib-static-debug.lib;util-compression-debug.lib;util-fs-debug.lib;util-prng-debug.lib;gfx-debug.lib;util-debug.lib;platform-debug.lib;glfw-debug.lib;core-id-debug.lib;cli-debug.lib;ctable-debug.lib;util-string-debug.lib;Dbghelp.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <Link>
-      <AdditionalDependencies>gfx-tex.lib;core.lib;zlib-static.lib;gfx.lib;util.lib;platform.lib;glfw.lib;core-id.lib;util-fs.lib;util-compression.lib;util-prng.lib;cli.lib;ctable.lib;util-string.lib;Dbghelp.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gfx-tex.lib;core.lib;zlib-static.lib;util-compression.lib;util-fs.lib;util-prng.lib;gfx.lib;util.lib;platform.lib;glfw.lib;core-id.lib;cli.lib;ctable.lib;util-string.lib;Dbghelp.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
