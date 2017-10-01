@@ -13,6 +13,7 @@
 #include <be/gfx/tex/image_format_gl.hpp>
 #include <be/gfx/tex/texture_reader.hpp>
 #include <be/gfx/tex/blit_pixels.hpp>
+#include <be/gfx/tex/log_texture_info.hpp>
 #include <be/cli/cli.hpp>
 #include <be/gfx/bgl.hpp>
 #include <glm/gtx/norm.hpp>
@@ -168,6 +169,8 @@ TexDemo::TexDemo(int argc, char** argv) {
                      TextureReader reader;
                      reader.read(file_);
                      Texture tex = reader.texture();
+                     gfx::tex::log_texture_info(tex.view, file_.string());
+                     //tex_ = std::move(tex);
                      dim_ = tex.view.dim(0);
                      tex_ = make_planar_texture(format_, dim_, 1);
                      auto dest = tex_.view.image(0,0,0);
@@ -549,7 +552,7 @@ void TexDemo::run_() {
 
 ///////////////////////////////////////////////////////////////////////////////
 void TexDemo::upload_() {
-   auto f = to_gl_format(format_);
+   auto f = to_gl_format(tex_.view.format());
 
    glPixelStorei(GL_UNPACK_ALIGNMENT, (GLint) tex_.storage->line_alignment());
 
@@ -558,6 +561,8 @@ void TexDemo::upload_() {
       & attr("Data Format") << enum_name(f.data_format)
       & attr("Data Type") << enum_name(f.data_type)
       | default_log();
+
+   //glCompressedTexImage2D(GL_TEXTURE_2D, 0, f.internal_format, tex_.view.dim(0).x, tex_.view.dim(0).y, 0, (GLsizei)tex_.view.image().size(), tex_.view.image().data());
 
    glTexImage2D(GL_TEXTURE_2D, 0, f.internal_format, tex_.view.dim(0).x, tex_.view.dim(0).y, 0, f.data_format, f.data_type, tex_.view.image().data());
 }
