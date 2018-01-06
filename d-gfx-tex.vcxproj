@@ -13,7 +13,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>d-gfx-tex</ProjectName>
     <RootNamespace>d-gfx</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
     <ProjectGuid>{F0BBF8B4-BFFA-4A1E-BBC9-F830CEC58C03}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -43,12 +43,12 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <Link>
-      <AdditionalDependencies>gfx-tex-debug.lib;core-debug.lib;zlib-static-debug.lib;util-compression-debug.lib;util-fs-debug.lib;util-prng-debug.lib;gfx-debug.lib;util-debug.lib;glfw-debug.lib;platform-debug.lib;core-id-debug.lib;cli-debug.lib;ctable-debug.lib;util-string-debug.lib;Dbghelp.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gfx-tex-debug.lib;core-debug.lib;zlib-static-debug.lib;util-compression-debug.lib;util-fs-debug.lib;util-prng-debug.lib;gfx-debug.lib;util-debug.lib;glfw-debug.lib;platform-debug.lib;core-id-debug.lib;cli-debug.lib;ctable-debug.lib;util-string-debug.lib;Dbghelp.lib;opengl32.lib;Setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <Link>
-      <AdditionalDependencies>gfx-tex.lib;core.lib;zlib-static.lib;util-compression.lib;util-fs.lib;util-prng.lib;gfx.lib;util.lib;glfw.lib;platform.lib;core-id.lib;cli.lib;ctable.lib;util-string.lib;Dbghelp.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>gfx-tex.lib;core.lib;zlib-static.lib;util-compression.lib;util-fs.lib;util-prng.lib;gfx.lib;util.lib;glfw.lib;platform.lib;core-id.lib;cli.lib;ctable.lib;util-string.lib;Dbghelp.lib;opengl32.lib;Setupapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

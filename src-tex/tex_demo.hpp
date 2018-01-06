@@ -8,9 +8,9 @@
 #include <be/core/filesystem.hpp>
 #include <be/util/xoroshiro_128_plus.hpp>
 #include <be/platform/lifecycle.hpp>
-#include <be/platform/glfw.hpp>
 #include <be/gfx/tex/texture.hpp>
 #include <be/gfx/bgl.hpp>
+#include <glfw/glfw3.h>
 #include <functional>
 #include <random>
 
@@ -26,7 +26,7 @@ private:
 
    be::CoreInitLifecycle init_;
    be::CoreLifecycle core_;
-   be::PlatformLifecycle platform_;
+   be::platform::PlatformLifecycle platform_;
 
    be::I8 status_ = 0;
 
